@@ -37,7 +37,7 @@ class TranscriptRequest(BaseModel):
 # Using the built-in SRTFormatter
 formatter = SRTFormatter()
 
-@app.get("/")
+@app.get("/api")
 async def root():
     """Welcome message"""
     return {
@@ -46,7 +46,7 @@ async def root():
         "docs": "/docs"
     }
 
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
     return {

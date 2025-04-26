@@ -74,7 +74,7 @@ This will start the server on `http://localhost:8000`.
 
 #### Root Endpoint
 ```
-GET /
+GET /api
 ```
 Returns a welcome message and API information.
 
@@ -89,7 +89,7 @@ Example response:
 
 #### Health Check
 ```
-GET /health
+GET /api/health
 ```
 Returns the health status of the API.
 
