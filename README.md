@@ -1,6 +1,6 @@
 # YouTube Transcript API Server
 
-A lightweight FastAPI server that fetches YouTube video transcripts and returns them in SRT format.
+A lightweight FastAPI server that fetches YouTube video transcripts and returns them in SRT format. Deployed on Vercel.
 
 ## Features
 
@@ -8,10 +8,11 @@ A lightweight FastAPI server that fetches YouTube video transcripts and returns 
 - Support for language selection
 - Returns transcripts in SRT format suitable for subtitle applications
 - Simple REST API with both GET and POST endpoints
+- Vercel deployment ready
 
 ## Installation
 
-1. Make sure you have Python 3.7+ installed.
+1. Make sure you have Python 3.12+ installed (latest stable version, compatible with Vercel deployment).
 
 2. Create and activate a virtual environment:
 
@@ -32,16 +33,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Running the Server
+## Dependencies
 
-Start the server with:
+The project uses the following main dependencies:
+- FastAPI: Modern web framework for building APIs
+- youtube-transcript-api: For fetching YouTube video transcripts
+- python-dotenv: For environment variable management
 
-```bash
-# Make sure your virtual environment is activated
-python server.py
+## Project Structure
+
+```
+.
+├── api/
+│   └── index.py      # Main FastAPI application
+├── requirements.txt  # Python dependencies
+├── vercel.json      # Vercel deployment configuration
+└── README.md        # Project documentation
 ```
 
-This will start the server on `http://0.0.0.0:8000`.
+## Local Development
+
+For local development, you can run:
+
+```bash
+uvicorn api.index:app --reload
+```
+
+This will start the server on `http://localhost:8000`.
 
 ## CORS Configuration
 
