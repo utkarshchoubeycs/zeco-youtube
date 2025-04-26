@@ -1,34 +1,50 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException, Depends, Security
+from fastapi.security.api_key import APIKeyHeader, APIKey
+from fastapi.middleware.cors import CORSMiddleware
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from youtube_transcript_api.formatters import SRTFormatter
-from functools import wraps
+from typing import Optional
+import os
+from pydantic import BaseModel
 
-app = Flask(__name__)
+app = FastAPI(title="YouTube Transcript API", description="API to fetch YouTube video transcripts")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API Key security scheme
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
+
+async def get_api_key(api_key_header: str = Security(api_key_header)):
+    if api_key_header == os.getenv("API_KEY"):
+        return api_key_header
+    raise HTTPException(
+        status_code=403,
+        detail="Invalid API Key"
+    )
+
+class TranscriptRequest(BaseModel):
+    video_id: str
+    language: Optional[str] = None
+
+# Using the built-in SRTFormatter
 formatter = SRTFormatter()
 
-def cors_enabled(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if request.method == 'OPTIONS':
-            response = app.make_default_options_response()
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-            return response
-        response = f(*args, **kwargs)
-        if isinstance(response, str):
-            response = app.make_response(response)
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response
-    return decorated_function
-
-@app.route('/api/transcript/<video_id>', methods=['GET', 'OPTIONS'])
-@cors_enabled
-def get_transcript(video_id):
+@app.get("/api/transcript/{video_id}")
+async def get_transcript(
+    video_id: str,
+    language: Optional[str] = None,
+    api_key: APIKey = Depends(get_api_key)
+):
     """Get YouTube video transcript in SRT format by video ID"""
     try:
-        language = request.args.get('language')
-        
         # Get transcript
         if language:
             transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
@@ -42,25 +58,23 @@ def get_transcript(video_id):
         return srt_content
         
     except (TranscriptsDisabled, NoTranscriptFound) as e:
-        return jsonify({"error": f"Transcript not available: {str(e)}"}), 404
+        raise HTTPException(
+            status_code=404,
+            detail=f"Transcript not available: {str(e)}"
+        )
     except Exception as e:
-        return jsonify({"error": f"Error fetching transcript: {str(e)}"}), 500
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching transcript: {str(e)}"
+        )
 
-@app.route('/api/transcript', methods=['POST', 'OPTIONS'])
-@cors_enabled
-def post_transcript():
+@app.post("/api/transcript")
+async def post_transcript(
+    request: TranscriptRequest,
+    api_key: APIKey = Depends(get_api_key)
+):
     """Get YouTube video transcript in SRT format via POST request"""
-    try:
-        data = request.get_json()
-        video_id = data.get('video_id')
-        language = data.get('language')
-        
-        if not video_id:
-            return jsonify({"error": "video_id is required"}), 400
-            
-        return get_transcript(video_id)
-    except Exception as e:
-        return jsonify({"error": f"Error processing request: {str(e)}"}), 500
+    return await get_transcript(request.video_id, request.language)
 
 # This is required for Vercel
 app = app 

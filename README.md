@@ -9,6 +9,7 @@ A lightweight FastAPI server that fetches YouTube video transcripts and returns 
 - Returns transcripts in SRT format suitable for subtitle applications
 - Simple REST API with both GET and POST endpoints
 - Vercel deployment ready
+- API Key authentication for secure access
 
 ## Installation
 
@@ -32,6 +33,11 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+4. Set up environment variables:
+   - Create a `.env` file for local development
+   - Set up environment variables in Vercel dashboard for production
+   - Required environment variable: `API_KEY` (your secret API key)
 
 ## Dependencies
 
@@ -61,19 +67,18 @@ uvicorn api.index:app --reload
 
 This will start the server on `http://localhost:8000`.
 
-## CORS Configuration
+## API Authentication
 
-The server is configured to allow cross-origin requests from any origin (`*`). For production environments, you should restrict this to specific origins by updating the `allow_origins` parameter in the CORS middleware:
+All API endpoints are protected with API key authentication. To access the API:
 
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://your-app-domain.com"],  # Restrict to specific origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+1. Include the API key in the request header:
 ```
+X-API-Key: your-api-key-here
+```
+
+2. Set up the API key:
+   - For local development: Add `API_KEY=your-secret-key` to your `.env` file
+   - For production: Add the `API_KEY` environment variable in your Vercel project settings
 
 ## API Usage
 
@@ -82,7 +87,12 @@ app.add_middleware(
 Fetch a transcript using a GET request:
 
 ```
-GET /transcript/{video_id}?language={language_code}
+GET /api/transcript/{video_id}?language={language_code}
+```
+
+Headers:
+```
+X-API-Key: your-api-key-here
 ```
 
 - `video_id`: The YouTube video ID (e.g., "dQw4w9WgXcQ")
@@ -91,7 +101,7 @@ GET /transcript/{video_id}?language={language_code}
 Example:
 
 ```
-GET /transcript/dQw4w9WgXcQ
+GET /api/transcript/dQw4w9WgXcQ
 ```
 
 ### POST Endpoint
@@ -99,15 +109,20 @@ GET /transcript/dQw4w9WgXcQ
 Fetch a transcript using a POST request:
 
 ```
-POST /transcript
+POST /api/transcript
+```
+
+Headers:
+```
+X-API-Key: your-api-key-here
 ```
 
 Request body:
 
 ```json
 {
-	"video_id": "dQw4w9WgXcQ",
-	"language": "en"
+    "video_id": "dQw4w9WgXcQ",
+    "language": "en"
 }
 ```
 
@@ -124,6 +139,7 @@ FastAPI generates interactive documentation automatically. You can access it at:
 
 The API returns appropriate HTTP status codes:
 
+- 403: Invalid or missing API key
 - 404: Transcript not available
 - 500: Server error when fetching transcript
 
@@ -139,8 +155,6 @@ Never gonna give you up
 2
 00:00:03,000 --> 00:00:06,000
 Never gonna let you down
-```
-
 ```
 
 ```
