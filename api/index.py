@@ -37,6 +37,23 @@ class TranscriptRequest(BaseModel):
 # Using the built-in SRTFormatter
 formatter = SRTFormatter()
 
+@app.get("/")
+async def root():
+    """Welcome message"""
+    return {
+        "message": "Welcome to Zeco YouTube Transcript API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "youtube-transcript-api"
+    }
+
 @app.get("/api/transcript/{video_id}")
 async def get_transcript(
     video_id: str,

@@ -10,6 +10,7 @@ A lightweight FastAPI server that fetches YouTube video transcripts and returns 
 - Simple REST API with both GET and POST endpoints
 - Vercel deployment ready
 - API Key authentication for secure access
+- Health check endpoint for monitoring
 
 ## Installation
 
@@ -66,6 +67,43 @@ uvicorn api.index:app --reload
 ```
 
 This will start the server on `http://localhost:8000`.
+
+## API Endpoints
+
+### Public Endpoints
+
+#### Root Endpoint
+```
+GET /
+```
+Returns a welcome message and API information.
+
+Example response:
+```json
+{
+    "message": "Welcome to Zeco YouTube Transcript API",
+    "version": "1.0.0",
+    "docs": "/docs"
+}
+```
+
+#### Health Check
+```
+GET /health
+```
+Returns the health status of the API.
+
+Example response:
+```json
+{
+    "status": "healthy",
+    "service": "youtube-transcript-api"
+}
+```
+
+### Protected Endpoints
+
+All transcript endpoints require API key authentication.
 
 ## API Authentication
 
