@@ -37,7 +37,7 @@ class TranscriptRequest(BaseModel):
 # Using the built-in SRTFormatter
 formatter = SRTFormatter()
 
-@app.get("/")
+@app.get("/api")
 async def root():
     """Welcome message"""
     return {
@@ -46,7 +46,7 @@ async def root():
         "docs": "/docs"
     }
 
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
     return {
@@ -54,7 +54,7 @@ async def health_check():
         "service": "youtube-transcript-api"
     }
 
-@app.get("/transcript/{video_id}")
+@app.get("/api/transcript/{video_id}")
 async def get_transcript(
     video_id: str,
     language: Optional[str] = None,
@@ -85,7 +85,7 @@ async def get_transcript(
             detail=f"Error fetching transcript: {str(e)}"
         )
 
-@app.post("/transcript")
+@app.post("/api/transcript")
 async def post_transcript(
     request: TranscriptRequest,
     api_key: APIKey = Depends(get_api_key)
